@@ -1,9 +1,9 @@
 import s from './MusicPlayer.module.css'
-import {ChangeEvent, useEffect, useRef, useState} from "react";
+import {ChangeEvent, useRef, useState} from "react";
 import {useAppDispatch} from "../../comon/hooks/useAppDispatch.ts";
 import {useAppSelector} from "../../comon/hooks/useAppSelector.ts";
-import {selectCurrentIndex, selectStatus, selectVolume} from "../model/MusicPlayerSelector.ts";
-import {changeTrack, changeVolume} from "../model/MusicPlayerReducer.ts";
+import {selectCurrentIndex, selectStatus} from "../model/MusicPlayerSelector.ts";
+import {changeTrack} from "../model/MusicPlayerReducer.ts";
 import {ControlPanel} from "./components/ControlPanel.tsx";
 import {formatTime} from "../../comon/utils/FormatTime.ts";
 
@@ -33,25 +33,16 @@ export const MusicPlayer = () => {
     ]
     const dispatch = useAppDispatch();
     const currentIndex = useAppSelector(selectCurrentIndex);
-    const volume = useAppSelector(selectVolume);
     const status = useAppSelector(selectStatus);
 
     const mediaRef = useRef<HTMLMediaElement | null>(null);
 
-
     const [currentTime, setCurrentTime] = useState<number>(0)
     const [duration, setDuration] = useState<number>(0);
 
-
-    useEffect(() => {
-        if (mediaRef.current) {
-            mediaRef.current.volume = volume
-        }
-    }, []);
-
     const handleNextTrack = () => {
         const nextIndex = (currentIndex + 1) % playerList.length;
-        console.log(nextIndex);
+
         if (status === 'Playing') {
             dispatch(changeTrack(nextIndex));
             if (mediaRef.current) {
@@ -82,21 +73,6 @@ export const MusicPlayer = () => {
         }
     }
 
-    const handleChangeVolume = (e: ChangeEvent<HTMLInputElement>) => {
-        dispatch(changeVolume(parseFloat(e.target.value)))
-        if (mediaRef.current) {
-            mediaRef.current.volume = volume
-        }
-    }
-
-    const calculateBackgroundSize = (value: number, min: number, max: number) => {
-        const valuePercent = `${100 - ((max - value) / (max - min)) * 100}% 100%`;
-        return valuePercent;
-    };
-
-    const rangeStyle = {
-        backgroundSize: calculateBackgroundSize(volume, 0, 1),
-    };
     return (
         <>
             <div className={s.container}>
@@ -130,16 +106,6 @@ export const MusicPlayer = () => {
                 </div>
                 <div className={s.controls}>
                     <ControlPanel mediaRef={mediaRef} playerListLength={playerList.length}/>
-                    <input
-                        type="range"
-                        className={s.volume}
-                        min='0'
-                        max='1'
-                        value={volume}
-                        step='0.01'
-                        onChange={handleChangeVolume}
-                        style={rangeStyle}
-                    />
                 </div>
 
             </div>

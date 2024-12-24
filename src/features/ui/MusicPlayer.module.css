@@ -54,6 +54,7 @@ body {
     height: 10px;
     margin: 0;
     background-color: #fb7e38;
+     cursor: pointer;
     border-radius: 5px;
     appearance: none;
     overflow: hidden;
@@ -137,6 +138,7 @@ body {
     margin: 0;
     /*background-color: #fb7e38;*/
     border: 1px solid #1db954;
+    cursor: pointer;
     border-radius: 3px;
     appearance: none;
     background-color:transparent;

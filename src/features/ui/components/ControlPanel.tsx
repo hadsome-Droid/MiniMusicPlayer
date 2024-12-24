@@ -4,11 +4,14 @@ import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 import {useAppSelector} from "../../../comon/hooks/useAppSelector.ts";
-import {selectCurrentIndex, selectStatus} from "../../model/MusicPlayerSelector.ts";
+import {selectCurrentIndex, selectIsRandomTrack, selectStatus} from "../../model/MusicPlayerSelector.ts";
 import {useAppDispatch} from "../../../comon/hooks/useAppDispatch.ts";
 import React from "react";
-import {changeTrack, changeTrackPlayerStatus} from "../../model/MusicPlayerReducer.ts";
+import {changeTrack, changeTrackPlayerStatus, randomTrack, Status} from "../../model/MusicPlayerReducer.ts";
+import {Volume} from "./Volume.tsx";
+import {getRandomIndex} from "../../../comon/utils/GetRandomIndex.ts";
 
 type Props = {
     mediaRef: React.RefObject<HTMLAudioElement>
@@ -18,45 +21,64 @@ type Props = {
 export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
     const status = useAppSelector(selectStatus)
     const currentIndex = useAppSelector(selectCurrentIndex)
+    const isRandomTrack = useAppSelector(selectIsRandomTrack)
     const dispatch = useAppDispatch()
+
+    const isPlaying = (status: Status) => {
+        if (mediaRef.current) {
+            if (status === 'Playing') {
+                mediaRef.current.play();
+            }
+            if (status === 'Paused') {
+                mediaRef.current.pause();
+            }
+        }
+    }
 
     const handlePlay = (index: number) => {
         dispatch(changeTrack(index))
         dispatch(changeTrackPlayerStatus('Playing'))
-        if (mediaRef.current) {
-            mediaRef.current.play();
-        }
+        isPlaying('Playing')
     }
 
     const handlePause = () => {
         dispatch(changeTrackPlayerStatus('Paused'))
-        if (mediaRef.current) {
-            mediaRef.current.pause();
+        isPlaying('Paused')
+    }
+
+    const handleSwitchTrack = (indexTrack: number) => {
+        if (status === 'Playing') {
+            dispatch(changeTrack(indexTrack))
+            if (mediaRef.current) {
+                setTimeout(() => mediaRef.current?.play(), 0)
+            }
         }
+        dispatch(changeTrack(indexTrack))
     }
 
     const handlePrevTrack = () => {
         const prevTrack = (currentIndex - 1 + playerListLength) % playerListLength
-        if (status === 'Playing') {
-            dispatch(changeTrack(prevTrack))
-            if (mediaRef.current) {
-                setTimeout(() => mediaRef.current?.play(), 0)
-            }
+        const randomTrack = getRandomIndex(playerListLength)
+        if (isRandomTrack) {
+            handleSwitchTrack(randomTrack)
         }
-        dispatch(changeTrack(prevTrack))
+        handleSwitchTrack(prevTrack)
     }
 
     const handleNextTrack = () => {
         const nextTrack = (currentIndex + 1) % playerListLength
-        if (status === 'Playing') {
-            dispatch(changeTrack(nextTrack))
-            if (mediaRef.current) {
-                setTimeout(() => mediaRef.current?.play(), 0)
-            }
+        const randomTrack = getRandomIndex(playerListLength)
+        if (isRandomTrack) {
+            handleSwitchTrack(randomTrack)
         }
-        dispatch(changeTrack(nextTrack))
+        handleSwitchTrack(nextTrack)
     }
 
+    console.log(Math.floor(Math.random() * playerListLength));
+    const handleRandomTrack = () => {
+        dispatch(randomTrack(!isRandomTrack))
+    }
+    console.log(isRandomTrack)
     return (
         <Stack direction="row"
                spacing={3}
@@ -64,6 +86,7 @@ export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
                    justifyContent: "center",
                    alignItems: "center",
                }}>
+            <IconButton children={<ShuffleIcon/>} onClick={handleRandomTrack}/>
             <IconButton aria-label='skipPrevious' color='warning' onClick={handlePrevTrack}
                         children={<SkipPreviousIcon/>}/>
             {status === 'Paused'
@@ -80,6 +103,7 @@ export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
             }
             <IconButton aria-label='skipNext' color='warning' onClick={handleNextTrack}
                         children={<SkipNextIcon/>}/>
+            <Volume mediaRef={mediaRef}/>
         </Stack>
     );
 };
