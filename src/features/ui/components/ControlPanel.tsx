@@ -74,11 +74,10 @@ export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
         handleSwitchTrack(nextTrack)
     }
 
-    console.log(Math.floor(Math.random() * playerListLength));
     const handleRandomTrack = () => {
         dispatch(randomTrack(!isRandomTrack))
     }
-    console.log(isRandomTrack)
+
     return (
         <Stack direction="row"
                spacing={3}
