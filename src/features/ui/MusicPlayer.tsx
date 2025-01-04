@@ -6,25 +6,35 @@ import {selectCurrentIndex, selectStatus} from "../model/MusicPlayerSelector.ts"
 import {changeTrack} from "../model/MusicPlayerReducer.ts";
 import {ControlPanel} from "./components/ControlPanel.tsx";
 import {formatTime} from "../../comon/utils/FormatTime.ts";
+import {parseBuffer} from 'music-metadata'
+import { v4 as uuidv4 } from 'uuid';
+
+type PlayerList = {
+    id: string
+    name: string | undefined
+    artist: string | undefined
+    srs: string
+    cover: string | undefined
+}
 
 export const MusicPlayer = () => {
     const playerList = [
         {
-            id: 1,
+            id: uuidv4(),
             name: 'Долбослав',
             artist: 'Powerwolf',
             src: '/src/assets/music/Powerwolf - Долбослав.mp3',
             cover: 'assets/1.jpg',
         },
         {
-            id: 2,
+            id: uuidv4(),
             name: 'Фантом',
             artist: 'RADIO_TAPOK',
             src: '/src/assets/music/RADIO_TAPOK_-_antom_69069063.mp3',
             cover: 'assets/2.jpg',
         },
         {
-            id: 3,
+            id: uuidv4(),
             name: 'Играть чтобы Жить',
             artist: 'Pavel_Plamenev',
             src: '/src/assets/music/Pavel_Plamenev_-_Igrat_chtoby_zhit_68906489.mp3',
@@ -37,11 +47,16 @@ export const MusicPlayer = () => {
 
     const mediaRef = useRef<HTMLMediaElement | null>(null);
 
+    const [playList, setPlayList] = useState(playerList);
     const [currentTime, setCurrentTime] = useState<number>(0)
     const [duration, setDuration] = useState<number>(0);
+    const [error, setError] = useState(null);
+    const [metadata, setMetadata] = useState(null);
+    const [audioSrc, setAudioSrc] = useState(null);
+
 
     const handleNextTrack = () => {
-        const nextIndex = (currentIndex + 1) % playerList.length;
+        const nextIndex = (currentIndex + 1) % playList.length;
 
         if (status === 'Playing') {
             dispatch(changeTrack(nextIndex));
@@ -73,12 +88,44 @@ export const MusicPlayer = () => {
         }
     }
 
+    const handleLoadedAudioData = async (e: ChangeEvent<HTMLInputElement>) => {
+        // console.log(e)
+        const file = e.currentTarget.files[0];
+        if (file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                const metadata = await parseBuffer(uint8Array);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setAudioSrc(e.target.result);
+                };
+                // reader.readAsDataURL(file)
+                // reader.readAsArrayBuffer(file)
+                // reader.readAsText(file)
+
+                setMetadata(metadata);
+                // const newTrack = {
+                //     id: uuidv4(),
+                //     name: metadata ? metadata.common.title : 'Some text',
+                //     artist: metadata ? metadata?.common.artist : 'some artist',
+                //     src: audioSrc,
+                //     cover: 'dsf'
+                // }
+                setError(null);
+                // setPlayList(newTrack)
+            } catch (e: any) {
+                setError(e.message);
+            }
+        }
+    }
+    console.log(metadata);
     return (
         <>
             <div className={s.container}>
                 <div className={s.songInfo}>
-                    <div className={s.artistName}>{playerList[currentIndex].artist}</div>
-                    <div className={s.songName}>{playerList[currentIndex].name}</div>
+                    <div className={s.artistName}>{playList[currentIndex].artist}</div>
+                    <div className={s.songName}>{playList[currentIndex].name}</div>
                     <div className={s.fillBarWrap}>
                         <input
                             type="range"
@@ -95,7 +142,7 @@ export const MusicPlayer = () => {
                     <audio
                         ref={mediaRef}
                         onEnded={handleNextTrack}
-                        src={playerList[currentIndex].src}
+                        src={playList[currentIndex].src}
                         onTimeUpdate={handleTimeUpdate} // Событие обновления времени
                         onLoadedMetadata={handleLoadedMetadata} // Событие загрузки метаданных
                     ></audio>
@@ -105,9 +152,9 @@ export const MusicPlayer = () => {
                     <div id="cover" className={`${s.cover} ${status === 'Playing' ? s.active : ''}`}></div>
                 </div>
                 <div className={s.controls}>
-                    <ControlPanel mediaRef={mediaRef} playerListLength={playerList.length}/>
+                    <ControlPanel mediaRef={mediaRef} playerListLength={playList.length}/>
                 </div>
-
+                <input type="file" onChange={handleLoadedAudioData} accept='audio/*' multiple/>
             </div>
         </>
     );

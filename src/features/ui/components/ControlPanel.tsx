@@ -85,7 +85,7 @@ export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
                    justifyContent: "center",
                    alignItems: "center",
                }}>
-            <IconButton children={<ShuffleIcon/>} onClick={handleRandomTrack}/>
+            <IconButton children={<ShuffleIcon/>} onClick={handleRandomTrack} color={isRandomTrack ? 'primary' : 'default'}/>
             <IconButton aria-label='skipPrevious' color='warning' onClick={handlePrevTrack}
                         children={<SkipPreviousIcon/>}/>
             {status === 'Paused'
