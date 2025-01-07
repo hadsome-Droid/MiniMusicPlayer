@@ -3,7 +3,7 @@ import {ChangeEvent, useRef, useState} from "react";
 import {useAppDispatch} from "../../comon/hooks/useAppDispatch.ts";
 import {useAppSelector} from "../../comon/hooks/useAppSelector.ts";
 import {selectCurrentIndex, selectStatus} from "../model/MusicPlayerSelector.ts";
-import {changeTrack} from "../model/MusicPlayerReducer.ts";
+import {changeTrack, switchTrack} from "../model/MusicPlayerSlice.ts";
 import {ControlPanel} from "./components/ControlPanel.tsx";
 import {formatTime} from "../../comon/utils/FormatTime.ts";
 import {parseBuffer} from 'music-metadata'
@@ -59,12 +59,14 @@ export const MusicPlayer = () => {
         const nextIndex = (currentIndex + 1) % playList.length;
 
         if (status === 'Playing') {
-            dispatch(changeTrack(nextIndex));
+            // dispatch(changeTrack(nextIndex));
+            dispatch(switchTrack({index: nextIndex}))
             if (mediaRef.current) {
                 setTimeout(() => mediaRef.current?.play(), 0)
             }
         } else {
-            dispatch(changeTrack(nextIndex))
+            // dispatch(changeTrack(nextIndex))
+            dispatch(switchTrack({index: nextIndex}))
         }
     }
 
@@ -106,7 +108,7 @@ export const MusicPlayer = () => {
 
                 setMetadata(metadata);
                 // const newTrack = {
-                //     id: uuidv4(),
+                //     id: 1,
                 //     name: metadata ? metadata.common.title : 'Some text',
                 //     artist: metadata ? metadata?.common.artist : 'some artist',
                 //     src: audioSrc,
@@ -119,7 +121,7 @@ export const MusicPlayer = () => {
             }
         }
     }
-    console.log(metadata);
+
     return (
         <>
             <div className={s.container}>

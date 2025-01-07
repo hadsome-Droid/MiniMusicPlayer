@@ -3,7 +3,7 @@ import s from "../MusicPlayer.module.css";
 import {useAppSelector} from "../../../comon/hooks/useAppSelector.ts";
 import {selectVolume} from "../../model/MusicPlayerSelector.ts";
 import {useAppDispatch} from "../../../comon/hooks/useAppDispatch.ts";
-import {changeVolume, muteTrack} from "../../model/MusicPlayerReducer.ts";
+import {changeVolume, muteVolume} from "../../model/MusicPlayerSlice.ts";
 import IconButton from "@mui/material/IconButton";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
@@ -27,11 +27,12 @@ export const Volume = ({mediaRef}: Props) => {
     }, [volume, updateVolume]);
 
     const handleChangeVolume = (e: ChangeEvent<HTMLInputElement>) => {
-        dispatch(changeVolume(+e.currentTarget.value))
+        dispatch(changeVolume({volume: + e.currentTarget.value}))
     }
 
     const handleMute = () => {
-        dispatch(muteTrack())
+        // dispatch(muteTrack())
+        dispatch(muteVolume())
     }
 
     const calculateBackgroundSize = (value: number, min: number, max: number) => {

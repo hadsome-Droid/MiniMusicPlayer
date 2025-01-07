@@ -9,7 +9,12 @@ import {useAppSelector} from "../../../comon/hooks/useAppSelector.ts";
 import {selectCurrentIndex, selectIsRandomTrack, selectStatus} from "../../model/MusicPlayerSelector.ts";
 import {useAppDispatch} from "../../../comon/hooks/useAppDispatch.ts";
 import React from "react";
-import {changeTrack, changeTrackPlayerStatus, randomTrack, Status} from "../../model/MusicPlayerReducer.ts";
+import {
+    changeTrackStatus,
+    randomTrack,
+    Status,
+    switchTrack
+} from "../../model/MusicPlayerSlice.ts";
 import {Volume} from "./Volume.tsx";
 import {getRandomIndex} from "../../../comon/utils/GetRandomIndex.ts";
 
@@ -36,31 +41,34 @@ export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
     }
 
     const handlePlay = (index: number) => {
-        dispatch(changeTrack(index))
-        dispatch(changeTrackPlayerStatus('Playing'))
+        // dispatch(changeTrack(index))
+        dispatch(switchTrack({index}))
+        // dispatch(changeTrackPlayerStatus('Playing'))
+        dispatch(changeTrackStatus({status: 'Playing'}))
         isPlaying('Playing')
     }
 
     const handlePause = () => {
-        dispatch(changeTrackPlayerStatus('Paused'))
+        dispatch(changeTrackStatus({status: 'Paused'}))
         isPlaying('Paused')
     }
 
     const handleSwitchTrack = (indexTrack: number) => {
         if (status === 'Playing') {
-            dispatch(changeTrack(indexTrack))
+            // dispatch(changeTrack(indexTrack))
+            dispatch(switchTrack({index: indexTrack}))
             if (mediaRef.current) {
                 setTimeout(() => mediaRef.current?.play(), 0)
             }
         }
-        dispatch(changeTrack(indexTrack))
+        dispatch(switchTrack({index: indexTrack}))
     }
 
     const handlePrevTrack = () => {
         const prevTrack = (currentIndex - 1 + playerListLength) % playerListLength
         const randomTrack = getRandomIndex(playerListLength)
-        if (isRandomTrack) {
-            handleSwitchTrack(randomTrack)
+        if (isRandomTrack === true) {
+           return handleSwitchTrack(randomTrack)
         }
         handleSwitchTrack(prevTrack)
     }
@@ -68,16 +76,16 @@ export const ControlPanel = ({mediaRef, playerListLength}: Props) => {
     const handleNextTrack = () => {
         const nextTrack = (currentIndex + 1) % playerListLength
         const randomTrack = getRandomIndex(playerListLength)
-        if (isRandomTrack) {
-            handleSwitchTrack(randomTrack)
+        if (isRandomTrack === true) {
+           return  handleSwitchTrack(randomTrack)
         }
         handleSwitchTrack(nextTrack)
     }
 
     const handleRandomTrack = () => {
-        dispatch(randomTrack(!isRandomTrack))
+        dispatch(randomTrack({isRandomTrack: !isRandomTrack}))
     }
-
+    console.log(isRandomTrack, currentIndex)
     return (
         <Stack direction="row"
                spacing={3}
